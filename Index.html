@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <!-- Login/Signup Modal -->
+    <div id="loginModal" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="#667eea" />
+                    <text x="50" y="60" font-size="48" font-weight="bold" fill="white" text-anchor="middle">C</text>
+                </svg>
+                <h1>Patient Management System</h1>
+                <p id="authTitle">Secure Login</p>
+            </div>
+            
+            <!-- LOGIN FORM -->
+            <form id="loginForm" class="login-form" style="display: block;">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group password-group">
+                    <label for="password">Password:</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password" name="password" required>
+                        <button type="button" class="password-toggle" id="togglePassword" title="Show/Hide Password">👁️</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Role:</label>
+                    <select id="role" name="role" required>
+                        <option value="">Select Role</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="staff">Staff</option>
+                        <option value="patient">Patient</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="login-btn">Sign In</button>
+            </form>
+            
+            <!-- SIGNUP FORM -->
+            <form id="signupForm" class="login-form" style="display: none;">
+                <div class="form-group">
+                    <label for="signupUsername">Username:</label>
+                    <input type="text" id="signupUsername" name="signupUsername" required>
+                </div>
+                
+                <div class="form-group password-group">
+                    <label for="signupPassword">Password:</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="signupPassword" name="signupPassword" required>
+                        <button type="button" class="password-toggle" id="toggleSignupPassword" title="Show/Hide Password">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group password-group">
+                    <label for="signupConfirmPassword">Confirm Password:</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="signupConfirmPassword" name="signupConfirmPassword" required>
+                        <button type="button" class="password-toggle" id="toggleConfirmPassword" title="Show/Hide Password">👁️</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupRole">Role:</label>
+                    <select id="signupRole" name="signupRole" required>
+                        <option value="">Select Role</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="staff">Staff</option>
+                        <option value="patient">Patient</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="login-btn">Create Account</button>
+            </form>
+
+            <!-- Toggle between signup and signin -->
+            <div class="auth-toggle">
+                <p id="toggleText">Don't have an account? <button type="button" id="toggleAuthBtn" class="toggle-btn">Sign Up</button></p>
+            </div>
+            
+            <!-- Demo accounts removed -->
+        </div>
+    </div>
+    
+    <!-- Main Application -->
+    <div id="mainApp" style="display: none;">
+        <header>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" fill="#667eea" />
+                <text x="50" y="60" font-size="48" font-weight="bold" fill="white" text-anchor="middle">C</text>
+            </svg>
+            <h1>Patient Management System</h1>
+            <div class="header-actions">
+                <div id="realTimeClock" class="real-time-clock"></div>
+                <span id="userInfo" class="user-info"></span>
+                <button id="ahmToggle" class="ahm-toggle" title="Toggle AHM">
+                    <span id="ahmStatus">AHM: Off</span>
+                </button>
+                <button id="themeToggle" class="theme-toggle" title="Toggle light/dark mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </header>
+        
+        <div class="main-container">
+            <div class="top-bar">
+                <h2>Patients List</h2>
+                <div style="display:flex; gap:8px;">
+                    <button id="addPatientBtn">+ Add Patient</button>
+                    <button id="sampleDataBtn" onclick="addSampleData()">Sample Data</button>
+                    <button id="roomManagementBtn" onclick="openRoomManagement()">Room Management</button>
+                    <button id="scheduleBtn" onclick="openScheduleManagement()">ER Schedule</button>
+                    <button id="allHistoryBtn" onclick="openAllHistoryModal()">All Histories</button>
+                    <button id="feedbackBtn" onclick="openFeedbackModal()">Feedback & Rate</button>
+                </div>
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by Patient ID, Name, or Location...">
+                <button id="searchBtn" class="search-btn">Search</button>
+                <button id="resetBtn" class="reset-btn">Reset</button>
+            </div>
+            
+            <div class="patients-container">
+                <div id="patientCardsGrid" class="patient-cards-grid">
+                    <!-- Patient cards will be added here -->
+                </div>
+                <table id="patientTable" class="patient-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Location</th>
+                            <th>Room</th>
+                            <th>Date admitted</th>
+                            <th>Added By</th>
+                            <th>ESI Level</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientTableBody">
+                        <!-- Patients will be added here -->
+                    </tbody>
+                </table>
+                <p id="noPatients" class="no-patients">No patients added yet.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="patientModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New Patient</h2>
+            <form id="patientForm">
+                <div class="form-group">
+                    <label for="patientId">Patient ID:</label>
+                    <input type="text" id="patientId" name="patientId" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="patientName">Name:</label>
+                    <input type="text" id="patientName" name="patientName" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientAge">Age:</label>
+                    <input type="number" id="patientAge" name="patientAge" min="0" max="150" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientBirthday">Birthday:</label>
+                    <input type="date" id="patientBirthday" name="patientBirthday" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientReligion">Religion:</label>
+                    <input type="text" id="patientReligion" name="patientReligion" placeholder="Enter religion" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientPhysician">Attending Physician:</label>
+                    <input type="text" id="patientPhysician" name="patientPhysician" placeholder="Enter physician name" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientLocation">Location (From):</label>
+                    <input type="text" id="patientLocation" name="patientLocation" placeholder="Enter location or address" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientRoom">Room:</label>
+                    <select id="patientRoom" name="patientRoom" required>
+                        <option value="">Select Available Room</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="patientBed">Bed:</label>
+                    <select id="patientBed" name="patientBed" required>
+                        <option value="">Select Room First</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="patientTime">Date admitted:</label>
+                    <input type="datetime-local" id="patientTime" name="patientTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientESI">ESI Level:</label>
+                    <select id="patientESI" name="patientESI" required>
+                        <option value="">Select ESI Level</option>
+                        <option value="ESI-1">ESI-1 - Resuscitation</option>
+                        <option value="ESI-2">ESI-2 - Emergent</option>
+                        <option value="ESI-3">ESI-3 - Urgent</option>
+                        <option value="ESI-4">ESI-4 - Less Urgent</option>
+                        <option value="ESI-5">ESI-5 - Non-Urgent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="patientDiseases">Diseases:</label>
+                    <textarea id="patientDiseases" name="patientDiseases" rows="4" placeholder="Enter diseases separated by commas"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Add Patient</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Patient EHR Details Modal -->
+    <div id="ehrModal" class="modal">
+        <div class="modal-content ehr-modal">
+            <span class="close" id="ehrClose">&times;</span>
+            <div class="ehr-header">
+                <div class="ehr-header-top">
+                    <div>
+                        <h2 id="ehrPatientName"></h2>
+                        <p id="ehrPatientId"></p>
+                    </div>
+                </div>
+                <div class="ehr-quick-info">
+                    <span><strong id="ehrAge"></strong></span>
+                    <span><strong id="ehrBirthday"></strong></span>
+                    <span><strong id="ehrReligion"></strong></span>
+                    <span><strong id="ehrLocation"></strong></span>
+                    <span><strong id="ehrRoom"></strong></span>
+                    <span><strong id="ehrPhysician"></strong></span>
+                    <span><strong id="ehrDateAdmitted"></strong></span>
+                    <span><strong id="ehrAddedBy"></strong></span>
+                    <span><strong id="ehrESI"></strong></span>
+                </div>
+            </div>
+            
+            <div class="ehr-tabs">
+                <button class="ehr-tab-btn active" data-tab="diagnosis">Diagnosis</button>
+                <button class="ehr-tab-btn" data-tab="medications">Medications</button>
+                <button class="ehr-tab-btn" data-tab="labs">Lab Results</button>
+                <button class="ehr-tab-btn" data-tab="vitals">Vitals</button>
+                <button class="ehr-tab-btn" data-tab="ebitriage">EBI Triage</button>
+                <button class="ehr-tab-btn" data-tab="transfer">Transfer</button>
+                <button class="ehr-tab-btn" data-tab="history">History</button>
+                <button class="ehr-tab-btn" data-tab="notes">Nurses Notes</button>
+            </div>
+            
+            <!-- Diagnosis Tab -->
+            <div id="diagnosis-tab" class="ehr-tab-content active">
+                <h3>Medical History & Diagnosis</h3>
+                <div id="diagnosisList" class="ehr-list"></div>
+                <div class="ehr-input-group">
+                    <input type="text" id="diagnosisInput" placeholder="Add diagnosis...">
+                    <button class="ehr-add-btn" onclick="addDiagnosis()">Add</button>
+                </div>
+            </div>
+            
+            <!-- Medications Tab -->
+            <div id="medications-tab" class="ehr-tab-content">
+                <h3>Medication Administration Record</h3>
+                
+                <!-- Add Medication Form -->
+                <div style="margin-bottom: 24px; padding: 20px; background: var(--list-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h4 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-color);">Add Medication</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Medication Name</label>
+                            <input type="text" id="medName" placeholder="e.g., Paracetamol, Normal Saline" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Dosage</label>
+                            <input type="text" id="medDosage" placeholder="e.g., 500mg, 1000ml" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Route</label>
+                            <select id="medRoute" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                                <option value="Oral">Oral (PO)</option>
+                                <option value="IV">Intravenous (IV)</option>
+                                <option value="IVF">IV Fluid (IVF)</option>
+                                <option value="IM">Intramuscular (IM)</option>
+                                <option value="SC">Subcutaneous (SC)</option>
+                                <option value="Topical">Topical</option>
+                                <option value="Inhalation">Inhalation</option>
+                                <option value="Rectal">Rectal</option>
+                                <option value="Sublingual">Sublingual</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Schedule / Time</label>
+                            <select id="medSchedule" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                                <option value="">Select Schedule</option>
+                                <option value="STAT">STAT (Immediately)</option>
+                                <option value="Once Daily">Once Daily</option>
+                                <option value="Every 4 hours">Every 4 hours</option>
+                                <option value="Every 6 hours">Every 6 hours</option>
+                                <option value="Every 8 hours">Every 8 hours</option>
+                                <option value="Every 12 hours">Every 12 hours</option>
+                                <option value="Every Shift">Every Shift (8 hours)</option>
+                                <option value="Morning Shift">Morning Shift (7 AM - 3 PM)</option>
+                                <option value="Evening Shift">Evening Shift (3 PM - 11 PM)</option>
+                                <option value="Night Shift">Night Shift (11 PM - 7 AM)</option>
+                                <option value="BID">BID (Twice daily)</option>
+                                <option value="TID">TID (Three times daily)</option>
+                                <option value="QID">QID (Four times daily)</option>
+                                <option value="PRN">PRN (As needed)</option>
+                                <option value="Custom">Custom (specify in notes)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- IV Fluid Calculation Section -->
+                    <div id="ivfSection" style="display: none; padding: 16px; background: var(--card-bg); border-radius: 8px; border: 2px solid var(--primary); margin-bottom: 12px;">
+                        <h5 style="margin: 0 0 12px 0; font-size: 14px; color: var(--primary); font-weight: 700;">💧 IV Fluid Calculation</h5>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-light); font-weight: 600;">Volume (ml)</label>
+                                <input type="number" id="ivfVolume" placeholder="e.g., 1000" style="width: 100%; padding: 8px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-light); font-weight: 600;">Duration (hours)</label>
+                                <input type="number" id="ivfDuration" placeholder="e.g., 8" step="0.5" style="width: 100%; padding: 8px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-light); font-weight: 600;">Drop Factor</label>
+                                <select id="ivfDropFactor" style="width: 100%; padding: 8px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                                    <option value="10">10 gtts/ml (Blood)</option>
+                                    <option value="15">15 gtts/ml (Standard)</option>
+                                    <option value="20" selected>20 gtts/ml (Standard)</option>
+                                    <option value="60">60 gtts/ml (Micro)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="ivfCalculation" style="padding: 12px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 6px; color: white; font-weight: 600; text-align: center; display: none;">
+                            <div style="font-size: 18px; margin-bottom: 4px;">Flow Rate: <span id="ivfGTTs">0</span> gtts/min</div>
+                            <div style="font-size: 13px; opacity: 0.9;">(<span id="ivfMLPerHour">0</span> ml/hr)</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Evaluation / Assessment</label>
+                        <textarea id="medEvaluation" placeholder="e.g., Pain reduced from 8/10 to 4/10, Patient tolerated well, No adverse effects noted" rows="2" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                    </div>
+                    
+                    <button class="ehr-add-btn" onclick="addMedicationRecord()" style="width: 100%;">Add Medication</button>
+                </div>
+                
+                <!-- Medications List -->
+                <h4 style="margin: 0 0 12px 0; font-size: 16px; color: var(--text-color);">Medication Records</h4>
+                <div id="medicationsList" class="ehr-list"></div>
+            </div>
+            
+            <!-- Lab Results Tab -->
+            <div id="labs-tab" class="ehr-tab-content">
+                <h3>Lab Results & Tests</h3>
+                <div id="labsList" class="ehr-list"></div>
+                <div class="ehr-input-group">
+                    <input type="text" id="labInput" placeholder="Add lab result (e.g., Blood Pressure: 120/80)...">
+                    <button class="ehr-add-btn" onclick="addLabResult()">Add</button>
+                </div>
+            </div>
+
+            <!-- Vitals Tab -->
+            <div id="vitals-tab" class="ehr-tab-content">
+                <h3>Vital Signs</h3>
+                <div id="vitalsContainer" style="margin-bottom:16px;">
+                    <canvas id="vitalsChart" width="600" height="300"></canvas>
+                </div>
+                <div class="ehr-input-group" style="gap:8px; align-items:center;">
+                    <label style="color:var(--text-light); font-weight:600;">Type:</label>
+                    <select id="vitalType" style="max-width:160px;">
+                        <option value="BP">BP</option>
+                        <option value="HR">HR</option>
+                        <option value="RR">RR</option>
+                        <option value="TEMP">TEMP (°C)</option>
+                        <option value="O2SAT">O2SAT (%)</option>
+                    </select>
+                    <input id="vitalValue" type="text" placeholder="Value (BP: 100/60)" style="max-width:120px; padding:8px;" />
+                    <button class="ehr-add-btn" onclick="addVital()">Add Vital</button>
+                    <button class="ehr-add-btn" onclick="addRestQuick()">Add REST</button>
+                    <button class="ehr-add-btn" onclick="resetVitalsGraph()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);">Reset Graph</button>
+                </div>
+                <p id="noVitalsMsg" class="empty-message">No vitals recorded for this patient.</p>
+            </div>
+
+            <!-- EBI Triage Tab -->
+            <div id="ebitriage-tab" class="ehr-tab-content">
+                <h3>EBI Triage Assessment</h3>
+                <div id="ebiTriageList" class="ehr-list"></div>
+                <div class="ehr-input-group" style="flex-direction:column; gap:8px;">
+                    <input type="text" id="ebiChiefComplaint" placeholder="Chief Complaint">
+                    <select id="ebiTriageLevel" style="padding:8px;">
+                        <option value="">Select Triage Level</option>
+                        <option value="Level 1 - Resuscitation">Level 1 - Resuscitation (Red)</option>
+                        <option value="Level 2 - Emergent">Level 2 - Emergent (Orange)</option>
+                        <option value="Level 3 - Urgent">Level 3 - Urgent (Yellow)</option>
+                        <option value="Level 4 - Less Urgent">Level 4 - Less Urgent (Green)</option>
+                        <option value="Level 5 - Non-Urgent">Level 5 - Non-Urgent (Blue)</option>
+                    </select>
+                    <textarea id="ebiAssessment" placeholder="Initial Assessment" rows="3"></textarea>
+                    <textarea id="ebiInterventions" placeholder="Immediate Interventions" rows="2"></textarea>
+                    <div style="display:flex; gap:8px;">
+                        <button class="ehr-add-btn" onclick="addEBITriage()">Add Triage Entry</button>
+                        <button class="ehr-add-btn" onclick="clearEBIInputs()" style="background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);">Clear</button>
+                    </div>
+                </div>
+                <p id="noEBIMsg" class="empty-message">No EBI triage entries recorded for this patient.</p>
+            </div>
+
+            <!-- Transfer Tab -->
+            <div id="transfer-tab" class="ehr-tab-content">
+                <h3>Patient Transfer Records</h3>
+                
+                <!-- Transfer Form -->
+                <div style="margin-bottom: 24px; padding: 20px; background: var(--list-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h4 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-color);">Record Patient Transfer</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Transfer Type</label>
+                            <select id="transferType" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                                <option value="Hospital">To Another Hospital</option>
+                                <option value="Ward">To Ward/Department</option>
+                                <option value="ICU">To ICU</option>
+                                <option value="OR">To Operating Room</option>
+                                <option value="Discharge">Discharge</option>
+                                <option value="Home">Home Care</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Destination</label>
+                            <input type="text" id="transferDestination" placeholder="e.g., St. Mary's Hospital, ICU Ward 3" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Reason for Transfer</label>
+                        <textarea id="transferReason" placeholder="e.g., Requires specialized cardiac care, Higher level of care needed" rows="2" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Authorized By (Physician)</label>
+                            <input type="text" id="transferAuthorizedBy" placeholder="e.g., Dr. Smith" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Accompanied By</label>
+                            <input type="text" id="transferAccompaniedBy" placeholder="e.g., Nurse Johnson, Paramedic Team" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Patient Condition at Transfer</label>
+                        <select id="transferCondition" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                            <option value="Stable">Stable</option>
+                            <option value="Critical">Critical</option>
+                            <option value="Serious">Serious</option>
+                            <option value="Fair">Fair</option>
+                            <option value="Good">Good</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-light); font-weight: 600;">Transfer Notes</label>
+                        <textarea id="transferNotes" placeholder="Additional notes, medications sent with patient, special instructions..." rows="3" style="width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                    </div>
+                    
+                    <button class="ehr-add-btn" onclick="addTransferRecord()" style="width: 100%;">Record Transfer</button>
+                </div>
+                
+                <!-- Transfer History -->
+                <h4 style="margin: 0 0 12px 0; font-size: 16px; color: var(--text-color);">Transfer History</h4>
+                <div id="transferList" class="ehr-list"></div>
+            </div>
+
+            <!-- Special Endorsement Tab -->
+            <div id="fdar-tab" class="ehr-tab-content">
+                <h3>Special Endorsement</h3>
+                <div id="fdarChartWrapper" style="margin-bottom:12px;">
+                    <canvas id="fdarChart" height="160" style="width:100%;height:160px; max-width:700px;"></canvas>
+                </div>
+                <div id="fdarList" class="ehr-list"></div>
+                <div class="ehr-input-group" style="flex-direction:column; gap:8px;">
+                    <input type="text" id="fdarFocus" placeholder="Focus (e.g., Pain, Respiration)...">
+                    <textarea id="fdarData" placeholder="Data - subjective & objective findings" rows="3"></textarea>
+                    <textarea id="fdarAction" placeholder="Action - interventions taken" rows="2"></textarea>
+                    <textarea id="fdarResponse" placeholder="Response - patient response / outcome" rows="2"></textarea>
+                    <div style="display:flex; gap:8px;">
+                        <button class="ehr-add-btn" onclick="addFDAR()">Add FDAR Entry</button>
+                        <button class="ehr-add-btn" onclick="clearFDARInputs()" style="background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);">Clear</button>
+                        <button class="ehr-add-btn" onclick="addSampleFDAR()" title="Add sample FDAR entries">Add Sample FDAR</button>
+                    </div>
+                </div>
+                <p id="noFdarMsg" class="empty-message">No FDAR entries recorded for this patient.</p>
+            </div>
+
+            <!-- SOAPIEa Tab -->
+            <div id="soapiea-tab" class="ehr-tab-content">
+                <h3>SOAPIEa Notes</h3>
+                <div id="soapieaList" class="ehr-list"></div>
+                <div class="ehr-input-group" style="flex-direction:column; gap:8px;">
+                    <textarea id="soapieaSubjective" placeholder="Subjective" rows="2"></textarea>
+                    <textarea id="soapieaObjective" placeholder="Objective" rows="2"></textarea>
+                    <textarea id="soapieaAssessment" placeholder="Assessment" rows="2"></textarea>
+                    <textarea id="soapieaPlan" placeholder="Plan" rows="2"></textarea>
+                    <textarea id="soapieaIntervention" placeholder="Intervention" rows="2"></textarea>
+                    <textarea id="soapieaEvaluation" placeholder="Evaluation" rows="2"></textarea>
+                    <div style="display:flex; gap:8px;">
+                        <button class="ehr-add-btn" onclick="addSOAPIEa()">Add SOAPIE Entry</button>
+                        <button class="ehr-add-btn" onclick="clearSOAPIEaInputs()" style="background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);">Clear</button>
+                    </div>
+                </div>
+                <p id="noSOAPIEaMsg" class="empty-message">No SOAPIEa entries recorded for this patient.</p>
+            </div>
+
+            <!-- ADPIE Tab -->
+            <div id="ADPIE-tab" class="ehr-tab-content">
+                <h3>ADPIE Notes</h3>
+                <div id="ADPIEList" class="ehr-list"></div>
+                <div class="ehr-input-group" style="flex-direction:column; gap:8px;">
+                    <input type="text" id="ADPIEData" placeholder="Assessment - subjective/objective data">
+                    <input type="text" id="ADPIEProblem" placeholder="Diagnosis- Problem">
+                    <textarea id="ADPIEPlanning" placeholder="Planning- Goal" rows="2"></textarea>
+                    <textarea id="ADPIEIntervention" placeholder="Intervention" rows="2"></textarea>
+                    <textarea id="ADPIEEvaluation" placeholder="evaluation" rows="2"></textarea>
+                    <div style="display:flex; gap:8px;">
+                        <button class="ehr-add-btn" onclick="addADPIE()">Add ADPIE Entry</button>
+                        <button class="ehr-add-btn" onclick="clearADPIEInputs()" style="background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);">Clear</button>
+                    </div>
+                </div>
+                <p id="noADPIEMsg" class="empty-message">No ADPIE entries recorded for this patient.</p>
+            </div>
+
+            <!-- History Tab -->
+            <div id="history-tab" class="ehr-tab-content">
+                <h3>Patient History</h3>
+                <div id="historyList" class="ehr-list"></div>
+                <div class="ehr-input-group" style="flex-direction:column; gap:8px;">
+                    <input type="date" id="historyDate" />
+                    <input type="text" id="historyTitle" placeholder="Title (e.g., Past Surgery, Chronic Illness)" />
+                    <textarea id="historyDescription" placeholder="Description" rows="3"></textarea>
+                    <div style="display:flex; gap:8px;">
+                        <button class="ehr-add-btn" onclick="addHistoryEntry()">Add History Entry</button>
+                        <button class="ehr-add-btn" onclick="clearHistoryInputs()" style="background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);">Clear</button>
+                    </div>
+                </div>
+                <p id="noHistoryMsg" class="empty-message">No history recorded for this patient.</p>
+            </div>
+            
+            <!-- Nurses Notes Tab -->
+            <div id="notes-tab" class="ehr-tab-content">
+                <h3>Nurses Notes & Observations</h3>
+                
+                <!-- Add Entry Forms -->
+                <div style="margin-bottom: 24px;">
+                    <h4 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-color);">Add Documentation Entry</h4>
+                    
+                    <!-- Special Endorsement Entry Form -->
+                    <div style="margin-bottom: 20px; padding: 20px; background: var(--list-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h5 style="margin: 0 0 12px 0; font-size: 15px; color: var(--primary); font-weight: 700;">Special Endorsement</h5>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="text" id="specialEndorsementTitle" placeholder="Title (e.g., Shift Handover, Critical Update)" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                            <textarea id="specialEndorsementContent" placeholder="Special endorsement details and important information to communicate..." rows="4" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <button class="ehr-add-btn" onclick="addSpecialEndorsement()">Add Special Endorsement</button>
+                        </div>
+                    </div>
+                    
+                    <!-- FDAR Entry Form -->
+                    <div style="margin-bottom: 20px; padding: 20px; background: var(--list-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h5 style="margin: 0 0 12px 0; font-size: 15px; color: var(--primary); font-weight: 700;">FDAR Entry</h5>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="text" id="fdarFocusNotes" placeholder="Focus (e.g., Pain, Respiration)" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                            <textarea id="fdarDataNotes" placeholder="Data - subjective & objective findings" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <textarea id="fdarActionNotes" placeholder="Action - interventions taken" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <textarea id="fdarResponseNotes" placeholder="Response - patient response / outcome" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <button class="ehr-add-btn" onclick="addFDARFromNotes()">Add FDAR Entry</button>
+                        </div>
+                    </div>
+
+                    <!-- SOAPIE Entry Form -->
+                    <div style="margin-bottom: 20px; padding: 20px; background: var(--list-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h5 style="margin: 0 0 12px 0; font-size: 15px; color: var(--primary); font-weight: 700;">SOAPIE Entry</h5>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <textarea id="soapieaSubjectiveNotes" placeholder="Subjective" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <textarea id="soapieaObjectiveNotes" placeholder="Objective" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <textarea id="soapieaAssessmentNotes" placeholder="Assessment" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <textarea id="soapieaPlanNotes" placeholder="Plan" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <textarea id="soapieaInterventionNotes" placeholder="Intervention" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <textarea id="soapieaEvaluationNotes" placeholder="Evaluation" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <button class="ehr-add-btn" onclick="addSOAPIEaFromNotes()">Add SOAPIE Entry</button>
+                        </div>
+                    </div>
+                    
+                    <!-- ADPIE Entry Form -->
+                    <div style="margin-bottom: 20px; padding: 20px; background: var(--list-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h5 style="margin: 0 0 12px 0; font-size: 15px; color: var(--primary); font-weight: 700;">ADPIE Entry</h5>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="text" id="ADPIEDataNotes" placeholder="Assessment - subjective/objective data" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                            <input type="text" id="ADPIEProblemNotes" placeholder="Diagnosis - Problem" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+                            <textarea id="ADPIEPlanningNotes" placeholder="Planning - Goal" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <textarea id="ADPIEInterventionNotes" placeholder="Intervention" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <textarea id="ADPIEEvaluationNotes" placeholder="Evaluation" rows="2" style="padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color);"></textarea>
+                            <button class="ehr-add-btn" onclick="addADPIEFromNotes()">Add ADPIE Entry</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Insert Sections -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 16px; color: var(--text-color);">Quick Insert Saved Entries</h4>
+                    
+                    <!-- Special Endorsement Quick Insert -->
+                    <div id="specialEndorsementInNotesContainer" style="margin-bottom: 16px;">
+                        <h5 style="margin: 0 0 8px 0; font-size: 14px; color: var(--text-light); font-weight: 600;">Special Endorsement</h5>
+                        <div id="specialEndorsementInNotes" class="ehr-list"></div>
+                    </div>
+                    
+                    <!-- FDAR Quick Insert -->
+                    <div id="fdarInNotesContainer" style="margin-bottom: 16px;">
+                        <h5 style="margin: 0 0 8px 0; font-size: 14px; color: var(--text-light); font-weight: 600;">FDAR Entries</h5>
+                        <div id="fdarInNotes" class="ehr-list"></div>
+                    </div>
+
+                    <!-- SOAPIEa Quick Insert -->
+                    <div id="soapieaInNotesContainer" style="margin-bottom: 16px;">
+                        <h5 style="margin: 0 0 8px 0; font-size: 14px; color: var(--text-light); font-weight: 600;">SOAPIEa Entries</h5>
+                        <div id="soapieaInNotes" class="ehr-list"></div>
+                    </div>
+                    
+                    <!-- ADPIE Quick Insert -->
+                    <div id="adpieInNotesContainer" style="margin-bottom: 16px;">
+                        <h5 style="margin: 0 0 8px 0; font-size: 14px; color: var(--text-light); font-weight: 600;">ADPIE Entries</h5>
+                        <div id="adpieInNotes" class="ehr-list"></div>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 0 0 12px 0; font-size: 16px; color: var(--text-color);">Nurses Notes</h4>
+                <div id="notesSaveInfo" style="margin-bottom: 8px; font-size: 12px; color: var(--text-lighter); font-style: italic;"></div>
+                <textarea id="notesArea" class="ehr-notes" placeholder="Add nurses notes..."></textarea>
+                <button class="ehr-save-btn" onclick="saveNotes()">Save Notes</button>
+            </div>
+            
+            <div class="ehr-actions">
+                <button class="ehr-print-btn" id="ehrPrintBtn">Print Record</button>
+                <button class="ehr-delete-btn" id="ehrDeleteBtn">Delete Patient</button>
+            </div>
+        </div>
+    </div>
+    <!-- All Patients History Modal -->
+    <div id="allHistoryModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width: 1000px;">
+            <span class="close" onclick="closeAllHistoryModal()">&times;</span>
+            <h2>All Patients History</h2>
+            
+            <!-- Search Bar -->
+            <div class="search-bar" style="margin-bottom: 20px;">
+                <input type="text" id="historySearchInput" class="search-input" placeholder="Search by Patient Name, ID, or History Title..." onkeyup="searchAllHistory()">
+                <button onclick="searchAllHistory()" class="search-btn">Search</button>
+                <button onclick="resetHistorySearch()" class="reset-btn">Reset</button>
+            </div>
+            
+            <!-- Patient Info Section -->
+            <div id="historyPatientInfo" style="display: none; margin-bottom: 20px; padding: 20px; background: var(--list-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                    <div>
+                        <h3 style="margin: 0 0 8px 0; color: var(--text-color); font-size: 20px;" id="historyPatientName"></h3>
+                        <p style="margin: 0; color: var(--primary); font-weight: 600; font-size: 14px; font-family: 'Courier New', monospace;" id="historyPatientId"></p>
+                    </div>
+                    <button class="delete-btn" onclick="deleteSelectedPatient()" style="margin: 0;">Delete Patient</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 13px;">
+                    <div style="padding: 10px; background: var(--bg-color); border-radius: 8px;">
+                        <span style="color: var(--text-lighter); font-size: 11px; display: block; margin-bottom: 4px;">Age</span>
+                        <strong id="historyPatientAge" style="color: var(--text-color);"></strong>
+                    </div>
+                    <div style="padding: 10px; background: var(--bg-color); border-radius: 8px;">
+                        <span style="color: var(--text-lighter); font-size: 11px; display: block; margin-bottom: 4px;">Location</span>
+                        <strong id="historyPatientLocation" style="color: var(--text-color);"></strong>
+                    </div>
+                    <div style="padding: 10px; background: var(--bg-color); border-radius: 8px;">
+                        <span style="color: var(--text-lighter); font-size: 11px; display: block; margin-bottom: 4px;">Room</span>
+                        <strong id="historyPatientRoom" style="color: var(--text-color);"></strong>
+                    </div>
+                    <div style="padding: 10px; background: var(--bg-color); border-radius: 8px;">
+                        <span style="color: var(--text-lighter); font-size: 11px; display: block; margin-bottom: 4px;">ESI Level</span>
+                        <strong id="historyPatientESI" style="color: var(--text-color);"></strong>
+                    </div>
+                    <div style="padding: 10px; background: var(--bg-color); border-radius: 8px;">
+                        <span style="color: var(--text-lighter); font-size: 11px; display: block; margin-bottom: 4px;">Physician</span>
+                        <strong id="historyPatientPhysician" style="color: var(--text-color);"></strong>
+                    </div>
+                    <div style="padding: 10px; background: var(--bg-color); border-radius: 8px;">
+                        <span style="color: var(--text-lighter); font-size: 11px; display: block; margin-bottom: 4px;">Date Admitted</span>
+                        <strong id="historyPatientAdmitted" style="color: var(--text-color);"></strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="allHistoryList" class="ehr-list" style="max-height:50vh; overflow:auto;"></div>
+        </div>
+    </div>
+    
+    <!-- Room Management Modal -->
+    <div id="roomManagementModal" class="modal" style="display:none;">
+        <div class="modal-content room-management-modal">
+            <span class="close" onclick="closeRoomManagement()">&times;</span>
+            <h2>Room & Bed Management</h2>
+            
+            <div class="room-add-section">
+                <h3>Add New Room</h3>
+                <div class="room-add-form">
+                    <input type="text" id="newRoomNumber" placeholder="Room Number (e.g., 101)" class="room-input">
+                    <input type="number" id="newRoomBeds" placeholder="Number of Beds" min="1" max="10" value="1" class="room-input-small">
+                    <select id="newRoomType" class="room-select">
+                        <option value="General Ward">General Ward</option>
+                        <option value="ICU">ICU</option>
+                        <option value="Emergency Room">Emergency Room</option>
+                        <option value="Private Room">Private Room</option>
+                        <option value="Pediatric">Pediatric</option>
+                    </select>
+                    <button onclick="addRoom()" class="room-add-btn">Add Room</button>
+                </div>
+            </div>
+            
+            <h3 style="margin-bottom: 16px; color: var(--text-color); font-size: 18px;">Available Rooms & Beds</h3>
+            <div id="roomsList" class="rooms-list"></div>
+        </div>
+    </div>
+    
+    <!-- ER Schedule Management Modal -->
+    <div id="scheduleModal" class="modal" style="display:none;">
+        <div class="modal-content schedule-modal">
+            <span class="close" onclick="closeScheduleManagement()">&times;</span>
+            <h2>Emergency Room Schedule</h2>
+            
+            <div class="schedule-add-section">
+                <h3>Post New Schedule</h3>
+                <div class="schedule-add-form">
+                    <input type="text" id="scheduleStaffName" placeholder="Staff Name" class="schedule-input">
+                    <input type="text" id="scheduleLicenseNumber" placeholder="License Number (e.g., RN-12345)" class="schedule-input">
+                    <select id="scheduleRole" class="schedule-select">
+                        <option value="">Select Role</option>
+                        <option value="Doctor">Doctor</option>
+                        <option value="Nurse">Nurse</option>
+                        <option value="Resident">Resident</option>
+                    </select>
+                    <input type="text" id="scheduleShift" placeholder="Shift (e.g., 7AM-3PM)" class="schedule-input">
+                    <input type="date" id="scheduleDate" class="schedule-input-small">
+                    <button onclick="addSchedule()" class="schedule-add-btn">Post Schedule</button>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                <button onclick="filterSchedule('all')" class="schedule-filter-btn active" id="filterAll">All</button>
+                <button onclick="filterSchedule('today')" class="schedule-filter-btn" id="filterToday">Today</button>
+                <button onclick="filterSchedule('week')" class="schedule-filter-btn" id="filterWeek">This Week</button>
+            </div>
+            
+            <h3 style="margin-bottom: 16px; color: var(--text-color); font-size: 18px;">Posted Schedules</h3>
+            <div id="scheduleList" class="schedule-list"></div>
+        </div>
+    </div>
+    
+    <!-- Feedback & Rating Modal -->
+    <div id="feedbackModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close" onclick="closeFeedbackModal()">&times;</span>
+            <h2>Feedback & Rating</h2>
+            <p style="color: var(--text-light); margin-bottom: 24px;">We value your feedback! Please rate your experience and share your thoughts.</p>
+            
+            <!-- Rating Section -->
+            <div style="margin-bottom: 30px; padding: 24px; background: var(--list-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                <h3 style="margin: 0 0 16px 0; color: var(--text-color); font-size: 18px; text-align: center;">Rate Your Experience</h3>
+                <div class="star-rating" id="starRating">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                </div>
+                <p id="ratingText" style="text-align: center; margin-top: 12px; color: var(--text-light); font-weight: 600; font-size: 16px;">Select a rating</p>
+            </div>
+            
+            <!-- Feedback Form -->
+            <div style="margin-bottom: 24px;">
+                <h3 style="margin: 0 0 16px 0; color: var(--text-color); font-size: 18px;">Your Feedback</h3>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color); font-size: 14px;">Category</label>
+                    <select id="feedbackCategory" style="width: 100%; padding: 12px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color); font-size: 14px;">
+                        <option value="">Select Category</option>
+                        <option value="User Interface">User Interface</option>
+                        <option value="Features">Features</option>
+                        <option value="Performance">Performance</option>
+                        <option value="Bug Report">Bug Report</option>
+                        <option value="Suggestion">Suggestion</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color); font-size: 14px;">Your Name (Optional)</label>
+                    <input type="text" id="feedbackName" placeholder="Enter your name" style="width: 100%; padding: 12px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color); font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color); font-size: 14px;">Comments</label>
+                    <textarea id="feedbackComments" rows="5" placeholder="Share your thoughts, suggestions, or report issues..." style="width: 100%; padding: 12px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color); font-size: 14px; resize: vertical;"></textarea>
+                </div>
+                <button onclick="submitFeedback()" class="submit-btn">Submit Feedback</button>
+            </div>
+            
+            <!-- Previous Feedback -->
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="margin: 0; color: var(--text-color); font-size: 18px;">Previous Feedback</h3>
+                    <button onclick="clearAllFeedback()" class="delete-btn" style="margin: 0;">Clear All</button>
+                </div>
+                <div id="feedbackList" class="ehr-list" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Voice Recognition Setup
+        let recognition = null;
+        let currentVoiceInput = null;
+        
+        // Initialize Speech Recognition
+        function initVoiceRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    if (currentVoiceInput) {
+                        if (currentVoiceInput.tagName === 'INPUT' || currentVoiceInput.tagName === 'TEXTAREA') {
+                            currentVoiceInput.value = currentVoiceInput.value + (currentVoiceInput.value ? ' ' : '') + transcript;
+                            currentVoiceInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                    stopVoiceRecognition();
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    stopVoiceRecognition();
+                };
+                
+                recognition.onend = function() {
+                    stopVoiceRecognition();
+                };
+            } else {
+                console.warn('Speech recognition not supported in this browser');
+            }
+        }
+        
+        function startVoiceRecognition(inputElement) {
+            if (!recognition) {
+                alert('Voice recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
+                return;
+            }
+            
+            currentVoiceInput = inputElement;
+            
+            // Add visual feedback
+            inputElement.style.borderColor = '#ff6b6b';
+            inputElement.style.boxShadow = '0 0 0 3px rgba(255, 107, 107, 0.2)';
+            
+            // Update button state
+            const voiceBtn = inputElement.nextElementSibling;
+            if (voiceBtn && voiceBtn.classList.contains('voice-btn')) {
+                voiceBtn.innerHTML = '⏹️';
+                voiceBtn.classList.add('recording');
+            }
+            
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error('Recognition start error:', e);
+                stopVoiceRecognition();
+            }
+        }
+        
+        function stopVoiceRecognition() {
+            if (recognition) {
+                try {
+                    recognition.stop();
+                } catch (e) {
+                    console.error('Recognition stop error:', e);
+                }
+            }
+            
+            if (currentVoiceInput) {
+                currentVoiceInput.style.borderColor = '';
+                currentVoiceInput.style.boxShadow = '';
+                
+                // Reset button state
+                const voiceBtn = currentVoiceInput.nextElementSibling;
+                if (voiceBtn && voiceBtn.classList.contains('voice-btn')) {
+                    voiceBtn.innerHTML = '🎤';
+                    voiceBtn.classList.remove('recording');
+                }
+            }
+            
+            currentVoiceInput = null;
+        }
+        
+        function toggleVoiceRecognition(inputElement) {
+            if (currentVoiceInput === inputElement) {
+                stopVoiceRecognition();
+            } else {
+                if (currentVoiceInput) {
+                    stopVoiceRecognition();
+                }
+                startVoiceRecognition(inputElement);
+            }
+        }
+        
+        // Add voice buttons to all inputs and textareas
+        function addVoiceButtons() {
+            const inputs = document.querySelectorAll('input[type="text"], input[type="number"], textarea, input[type="datetime-local"], input[type="date"]');
+            
+            inputs.forEach(input => {
+                // Skip if already has voice button, is readonly, or is a search/filter input
+                if (input.nextElementSibling?.classList.contains('voice-btn') || 
+                    input.readOnly || 
+                    input.id === 'searchInput' ||
+                    input.id === 'historySearchInput' ||
+                    input.type === 'datetime-local' ||
+                    input.type === 'date') {
+                    return;
+                }
+                
+                // Wrap input in container if not already wrapped
+                if (!input.parentElement.classList.contains('voice-input-wrapper')) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'voice-input-wrapper';
+                    
+                    input.parentNode.insertBefore(wrapper, input);
+                    wrapper.appendChild(input);
+                    
+                    // Create voice button
+                    const voiceBtn = document.createElement('button');
+                    voiceBtn.type = 'button';
+                    voiceBtn.className = 'voice-btn';
+                    voiceBtn.innerHTML = '🎤';
+                    voiceBtn.title = 'Click to use voice input';
+                    voiceBtn.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleVoiceRecognition(input);
+                    };
+                    
+                    wrapper.appendChild(voiceBtn);
+                }
+            });
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            initVoiceRecognition();
+            addVoiceButtons();
+            
+            // Re-add voice buttons when modals open
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length) {
+                        setTimeout(addVoiceButtons, 100);
+                    }
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
+    
+    <!-- QR Code Modal -->
+    <div id="qrCodeModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width: 500px; text-align: center;">
+            <span class="close" onclick="closeQRCodeModal()">&times;</span>
+            <h2 style="margin-bottom: 16px;">Patient QR Code</h2>
+            <p style="color: var(--text-light); margin-bottom: 20px;">Scan this QR code to access patient information</p>
+            
+            <div style="padding: 24px; background: var(--list-bg); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                <div id="qrCodeContainer" style="display: flex; justify-content: center; margin-bottom: 16px;"></div>
+                <div style="padding: 12px; background: var(--bg-color); border-radius: 8px; margin-bottom: 12px;">
+                    <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">Patient ID</div>
+                    <div id="qrPatientId" style="font-size: 18px; font-weight: 700; color: var(--primary); font-family: monospace;"></div>
+                </div>
+                <div style="padding: 12px; background: var(--bg-color); border-radius: 8px;">
+                    <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">Patient Name</div>
+                    <div id="qrPatientName" style="font-size: 16px; font-weight: 600; color: var(--text-color);"></div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="downloadQRCode()" class="ehr-add-btn" style="padding: 12px 24px;">
+                    📥 Download PNG
+                </button>
+                <button onclick="exportQRToWord()" class="ehr-add-btn" style="padding: 12px 24px; background: linear-gradient(135deg, #2b5797 0%, #1e3a5f 100%);">
+                    📄 Export to Word
+                </button>
+                <button onclick="printQRCode()" class="ehr-add-btn" style="padding: 12px 24px; background: linear-gradient(135deg, #ff9f43 0%, #ff6348 100%);">
+                    🖨️ Print QR Code
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
